@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MBG Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; margin: 0; }
+
+    /* SIDEBAR */
+    .sidebar { width: 220px; background: #1a56db; min-height: 100vh; padding: 1.5rem 1rem; display: flex; flex-direction: column; }
+    .sidebar-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 2rem; padding: 0 0.5rem; }
+    .logo-icon { width: 34px; height: 34px; background: rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .logo-icon svg { width: 18px; height: 18px; fill: white; }
+    .sidebar-logo span { font-size: 17px; font-weight: 600; color: white; }
+    .nav-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.45); padding: 0 0.75rem; margin-bottom: 6px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 0.6rem 0.75rem; border-radius: 8px; cursor: pointer; color: rgba(255,255,255,0.75); font-size: 14px; transition: background 0.15s; margin-bottom: 2px; }
+    .nav-item:hover { background: rgba(255,255,255,0.12); color: white; }
+    .nav-item.active { background: rgba(255,255,255,0.2); color: white; font-weight: 600; }
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .sidebar-footer { margin-top: auto; padding: 0.75rem; background: rgba(255,255,255,0.08); border-radius: 8px; }
+    .sidebar-footer .label { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 2px; }
+    .sidebar-footer .value { font-size: 13px; color: white; font-weight: 600; }
+
+    /* TOPBAR */
+    .topbar { background: white; border-bottom: 1px solid #e5e7eb; padding: 0.875rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+    .topbar-title { font-size: 15px; font-weight: 600; color: #111827; }
+    .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: #dbeafe; color: #1e40af; font-weight: 600; }
+
+    /* STATS */
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.25rem; }
+    .stat-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem 1.25rem; }
+    .stat-label { font-size: 12px; color: #6b7280; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .stat-label svg { width: 14px; height: 14px; }
+    .stat-value { font-size: 28px; font-weight: 700; color: #111827; line-height: 1; }
+    .stat-sub { font-size: 11px; color: #9ca3af; margin-top: 6px; }
+    .stat-up { color: #059669; font-weight: 600; }
+
+    /* TABLE CARD */
+    .table-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+    .table-toolbar { padding: 0.75rem 1rem; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .search-wrap { display: flex; align-items: center; gap: 6px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 7px; padding: 0 10px; flex: 1; max-width: 240px; }
+    .search-wrap svg { width: 14px; height: 14px; color: #9ca3af; flex-shrink: 0; fill: #9ca3af; }
+    .search-wrap input { border: none; background: transparent; font-size: 13px; color: #111827; outline: none; width: 100%; padding: 7px 0; }
+
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; gap: 5px; padding: 0.45rem 0.875rem; border-radius: 7px; font-size: 13px; cursor: pointer; border: 1px solid #d1d5db; background: white; color: #374151; font-weight: 500; transition: all 0.15s; }
+    .btn:hover { background: #f9fafb; }
+    .btn-primary { background: #1a56db; color: white; border-color: #1a56db; }
+    .btn-primary:hover { background: #1e40af; border-color: #1e40af; }
+    .btn-success { background: #059669; color: white; border-color: #059669; }
+    .btn-success:hover { background: #047857; border-color: #047857; }
+    .btn svg { width: 13px; height: 13px; }
+    .btn-toolbar { display: flex; gap: 6px; }
+
+    /* TABLE */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { border-bottom: 1px solid #e5e7eb; background: #f9fafb; }
+    th { text-align: left; padding: 0.6rem 1rem; font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+    td { padding: 0.75rem 1rem; color: #374151; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #f9fafb; }
+
+    /* PILLS / BADGES */
+    .pill { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .pill-blue { background: #dbeafe; color: #1e40af; }
+    .pill-green { background: #d1fae5; color: #065f46; }
+    .pill-amber { background: #fef3c7; color: #92400e; }
+    .pill-red { background: #fee2e2; color: #991b1b; }
+
+    /* ACTION BUTTON */
+    .action-btn { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; background: transparent; transition: background 0.15s; }
+    .action-btn:hover { background: #f3f4f6; }
+    .action-btn svg { width: 13px; height: 13px; fill: #6b7280; }
+    .action-btn.del:hover { background: #fee2e2; border-color: #fca5a5; }
+    .action-btn.del:hover svg { fill: #dc2626; }
+
+    /* PAGINATION */
+    .pagination { padding: 0.75rem 1rem; border-top: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; }
+    .pagination span { font-size: 12px; color: #6b7280; }
+    .page-btns { display: flex; gap: 4px; }
+    .page-btn { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 12px; cursor: pointer; background: white; color: #374151; font-weight: 500; }
+    .page-btn.active { background: #1a56db; color: white; border-color: #1a56db; }
+    .page-btn:hover:not(.active) { background: #f9fafb; }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 50; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: white; border-radius: 14px; border: 1px solid #e5e7eb; padding: 1.5rem; width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .modal-title { font-size: 16px; font-weight: 600; color: #111827; }
+    .close-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 6px; cursor: pointer; border: 1px solid #e5e7eb; background: transparent; color: #9ca3af; transition: all 0.15s; }
+    .close-btn:hover { background: #f3f4f6; }
+    .form-group { margin-bottom: 12px; }
+    .form-label { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 5px; display: block; }
+    .form-input { width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 7px; padding: 0.55rem 0.75rem; font-size: 13px; color: #111827; outline: none; transition: border 0.15s; }
+    .form-input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: white; }
+    .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #f3f4f6; }
+
+    /* PAGES */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* TABLE HEADER CARD */
+    .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid #e5e7eb; }
+    .card-header .title { font-size: 14px; font-weight: 600; color: #111827; margin-bottom: 2px; }
+    .card-header .subtitle { font-size: 12px; color: #9ca3af; }
+  </style>
+</head>
+<body>
+
+<div style="display:flex;">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      </div>
+      <span>MBG App</span>
+    </div>
+
+    <div class="nav-label">Menu</div>
+    <div class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" id="nav-pesanan" onclick="showPage('pesanan')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+      Pesanan
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="label">Tahun ajaran</div>
+      <div class="value">2024 / 2025</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div style="flex:1; display:flex; flex-direction:column; min-height:100vh;">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:12px; color:#9ca3af;" id="topbar-date"></span>
+        <div class="badge">Aktif</div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div style="flex:1; padding:1.25rem 1.5rem;">
+
+      <!-- DASHBOARD PAGE -->
+      <div class="page active" id="dashboardPage">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">
+              <svg viewBox="0 0 24 24" fill="#9ca3af"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+              Total data
+            </div>
+            <div class="stat-value" id="totalData">0</div>
+            <div class="stat-sub">semua pemesan</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">
+              <svg viewBox="0 0 24 24" fill="#9ca3af"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+              Total pesanan
+            </div>
+            <div class="stat-value" id="totalJumlah">0</div>
+            <div class="stat-sub">total porsi</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">
+              <svg viewBox="0 0 24 24" fill="#9ca3af"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+              Hari ini
+            </div>
+            <div class="stat-value" id="hariIni">0</div>
+            <div class="stat-sub">pesanan hari ini</div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="card-header">
+            <div class="title">Pesanan terbaru</div>
+            <div class="subtitle">5 pesanan terakhir yang masuk</div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Nama</th>
+                <th>Pesanan</th>
+                <th>Jumlah</th>
+              </tr>
+            </thead>
+            <tbody id="recentTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PESANAN PAGE -->
+      <div class="page" id="pesananPage">
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              <input id="searchInput" placeholder="Cari nama, pesanan..." oninput="renderTable()">
+            </div>
+            <div class="btn-toolbar">
+              <button class="btn btn-primary" onclick="tambahData()">
+                <svg viewBox="0 0 24 24" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                Tambah
+              </button>
+              <button class="btn btn-success" onclick="exportExcel()">
+                <svg viewBox="0 0 24 24" fill="white"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                Excel
+              </button>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width:45px;">No</th>
+                <th>Tanggal</th>
+                <th>Nama</th>
+                <th>Pesanan</th>
+                <th>Jumlah</th>
+                <th style="width:90px;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tableData"></tbody>
+          </table>
+
+          <div class="pagination">
+            <span id="paginationInfo">Menampilkan 0 data</span>
+            <div class="page-btns" id="paginationBtns"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalForm">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Tambah Pesanan</div>
+      <button class="close-btn" onclick="tutupModal()">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tanggal</label>
+      <input id="formTanggal" type="date" class="form-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nama</label>
+      <input id="formNama" type="text" placeholder="Nama pemesan" class="form-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Pesanan</label>
+      <input id="formPesanan" type="text" placeholder="Nama menu" class="form-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Jumlah</label>
+      <input id="formJumlah" type="number" placeholder="0" min="1" class="form-input">
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="tutupModal()">Batal</button>
+      <button class="btn btn-primary" onclick="simpanForm()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
