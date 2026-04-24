@@ -1,117 +1,66 @@
-// =====================
-// DATA & STATE
-// =====================
 let data = JSON.parse(localStorage.getItem('mbgData') || '[]');
 let editIndex = null;
-let currentPage = 1;
-const perPage = 10;
 
-// =====================
-// INIT
-// =====================
 document.addEventListener('DOMContentLoaded', () => {
-    setTodayDate();
-    setTopbarDate();
     updateDashboard();
     renderTable();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('id-ID', options);
 });
 
-function setTodayDate() {
-    const today = new Date().toISOString().split('T')[0];
-    const el = document.getElementById('formTanggal');
-    if (el) el.value = today;
-}
-
-function setTopbarDate() {
-    const el = document.getElementById('topbar-date');
-    if (!el) return;
-    const now = new Date();
-    el.textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-}
-
-function saveData() {
-    localStorage.setItem('mbgData', JSON.stringify(data));
-}
-
-// =====================
-// NAVIGATION
-// =====================
 function showPage(page) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    
     document.getElementById(page + 'Page').classList.add('active');
     document.getElementById('nav-' + page).classList.add('active');
-    document.getElementById('topbar-title').textContent = page.charAt(0).toUpperCase() + page.slice(1);
-    
-    if (page === 'dashboard') updateDashboard();
-    if (page === 'pesanan') renderTable();
+    document.getElementById('topbar-title').textContent = page === 'dashboard' ? 'Dashboard' : 'Data Pesanan';
+    if(page === 'dashboard') updateDashboard();
 }
 
-// =====================
-// DASHBOARD LOGIC
-// =====================
 function updateDashboard() {
     const today = new Date().toISOString().split('T')[0];
-    document.getElementById('totalData').textContent = data.length;
-    document.getElementById('totalJumlah').textContent = data.reduce((s, d) => s + Number(d.jumlah || 0), 0);
-    document.getElementById('hariIni').textContent = data.filter(d => d.tanggal === today).length;
-
+    document.getElementById('stat-total-mbg').textContent = data.length;
+    document.getElementById('stat-total-porsi').textContent = data.reduce((s, d) => s + Number(d.jumlah || 0), 0);
+    document.getElementById('stat-hari-ini').textContent = data.filter(d => d.tanggal === today).length;
     const recent = [...data].reverse().slice(0, 5);
-    const tbody = document.getElementById('recentTable');
-    tbody.innerHTML = recent.map(d => `
+    document.getElementById('recentTable').innerHTML = recent.map(d => `
+        <tr><td>${d.tanggal}</td><td>${d.nama}</td><td>${d.pesanan}</td><td><b>${d.jumlah}</b></td></tr>
+    `).join('');
+}
+
+function renderTable() {
+    const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
+    const filtered = data.filter(d => d.nama.toLowerCase().includes(query) || d.pesanan.toLowerCase().includes(query));
+    const tbody = document.getElementById('tableData');
+    
+    tbody.innerHTML = filtered.map((d, i) => `
         <tr>
+            <td>${i + 1}</td>
             <td>${d.tanggal}</td>
-            <td>${d.nama}</td>
+            <td style="font-weight:600;">${d.nama}</td>
             <td>${d.pesanan}</td>
-            <td><span style="color:#1a56db; font-weight:bold;">${d.jumlah}</span></td>
+            <td style="color:#1a56db; font-weight:bold;">${d.jumlah}</td>
+            <td class="no-print" style="text-align:center;">
+                <button onclick="editData(${data.indexOf(d)})" class="action-btn btn-edit-icon" title="Edit">
+                    <svg style="width:18px;height:18px" viewBox="0 0 24 24"><path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" /></svg>
+                </button>
+                <button onclick="hapusData(${data.indexOf(d)})" class="action-btn btn-delete-icon" title="Hapus">
+                    <svg style="width:18px;height:18px" viewBox="0 0 24 24"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg>
+                </button>
+            </td>
         </tr>
     `).join('');
 }
 
-// =====================
-// PESANAN TABLE LOGIC
-// =====================
-function renderTable() {
-    const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
-    const filtered = data.filter(d => 
-        d.nama.toLowerCase().includes(query) || 
-        d.pesanan.toLowerCase().includes(query)
-    );
-
-    const tbody = document.getElementById('tableData');
-    if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#9ca3af;">Tidak ada data</td></tr>`;
-    } else {
-        tbody.innerHTML = filtered.map((d, i) => `
-            <tr>
-                <td style="color:#9ca3af;">${i + 1}</td>
-                <td>${d.tanggal}</td>
-                <td style="font-weight:600;">${d.nama}</td>
-                <td>${d.pesanan}</td>
-                <td><span style="color:#1a56db; font-weight:bold;">${d.jumlah}</span></td>
-                <td class="no-print">
-                    <button onclick="editData(${data.indexOf(d)})" style="color:#1a56db; font-size:12px; margin-right:8px;">Edit</button>
-                    <button onclick="hapusData(${data.indexOf(d)})" style="color:#dc2626; font-size:12px;">Hapus</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-    
-    document.getElementById('paginationInfo').textContent = `Total: ${filtered.length} data`;
-}
-
-// =====================
-// CRUD ACTIONS
-// =====================
+// Fitur Tambah/Simpan/Hapus (Tidak diubah)
 function tambahData() {
     editIndex = null;
     document.getElementById('modalTitle').textContent = 'Tambah Pesanan';
     document.getElementById('formNama').value = '';
     document.getElementById('formPesanan').value = '';
     document.getElementById('formJumlah').value = '';
-    setTodayDate();
-    bukaModal();
+    document.getElementById('formTanggal').value = new Date().toISOString().split('T')[0];
+    document.getElementById('modalForm').classList.add('open');
 }
 
 function editData(index) {
@@ -122,15 +71,7 @@ function editData(index) {
     document.getElementById('formNama').value = d.nama;
     document.getElementById('formPesanan').value = d.pesanan;
     document.getElementById('formJumlah').value = d.jumlah;
-    bukaModal();
-}
-
-function hapusData(index) {
-    if (!confirm('Hapus pesanan ini?')) return;
-    data.splice(index, 1);
-    saveData();
-    renderTable();
-    updateDashboard();
+    document.getElementById('modalForm').classList.add('open');
 }
 
 function simpanForm() {
@@ -140,55 +81,43 @@ function simpanForm() {
         pesanan: document.getElementById('formPesanan').value,
         jumlah: document.getElementById('formJumlah').value
     };
-
-    if (!entry.nama || !entry.pesanan || !entry.jumlah) {
-        alert('Harap isi semua kolom!');
-        return;
-    }
-
-    if (editIndex !== null) data[editIndex] = entry;
+    if(!entry.nama || !entry.jumlah) return alert('Data wajib diisi!');
+    if(editIndex !== null) data[editIndex] = entry;
     else data.push(entry);
-
-    saveData();
-    tutupModal();
-    renderTable();
-    updateDashboard();
+    localStorage.setItem('mbgData', JSON.stringify(data));
+    tutupModal(); renderTable(); updateDashboard();
 }
 
-function bukaModal() { document.getElementById('modalForm').classList.add('open'); }
+function hapusData(index) {
+    if(confirm('Hapus data ini?')) {
+        data.splice(index, 1);
+        localStorage.setItem('mbgData', JSON.stringify(data));
+        renderTable(); updateDashboard();
+    }
+}
+
 function tutupModal() { document.getElementById('modalForm').classList.remove('open'); }
 
-// =====================
-// EXPORT FUNCTIONS
-// =====================
+// Fitur Ekspor Tetap (Filter Berdasarkan Pencarian)
+function exportPDF() {
+    const query = document.getElementById('searchInput').value;
+    const filteredData = data.filter(d => d.nama.toLowerCase().includes(query.toLowerCase()));
+    if(filteredData.length === 0) return alert('Data kosong!');
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.text(`LAPORAN PESANAN: ${query.toUpperCase() || 'SEMUA'}`, 14, 15);
+    const rows = filteredData.map((d, i) => [i + 1, d.tanggal, d.nama, d.pesanan, d.jumlah]);
+    doc.autoTable({ head: [['No', 'Tanggal', 'Nama MBG', 'Pesanan', 'Jumlah']], body: rows, startY: 25 });
+    doc.save(`Laporan_${query || 'MBG'}.pdf`);
+}
+
 function exportExcel() {
-    if (data.length === 0) return alert('Data kosong!');
-    let csv = 'No,Tanggal,Nama,Pesanan,Jumlah\n';
-    data.forEach((d, i) => {
-        csv += `${i + 1},${d.tanggal},${d.nama},${d.pesanan},${d.jumlah}\n`;
-    });
+    const query = document.getElementById('searchInput').value;
+    const filteredData = data.filter(d => d.nama.toLowerCase().includes(query.toLowerCase()));
+    let csv = 'No,Tanggal,Nama MBG,Pesanan,Jumlah\n';
+    filteredData.forEach((d, i) => { csv += `${i+1},${d.tanggal},${d.nama},${d.pesanan},${d.jumlah}\n`; });
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `MBG_Data_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-}
-
-function exportPDF() {
-    if (data.length === 0) return alert('Data kosong!');
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    doc.text("Laporan Pesanan MBG", 14, 15);
-    const rows = data.map((d, i) => [i + 1, d.tanggal, d.nama, d.pesanan, d.jumlah]);
-    
-    doc.autoTable({
-        head: [['No', 'Tanggal', 'Nama', 'Pesanan', 'Jumlah']],
-        body: rows,
-        startY: 20,
-        theme: 'grid'
-    });
-    
-    doc.save(`Laporan_MBG_${new Date().toISOString().split('T')[0]}.pdf`);
+    a.href = url; a.download = `Data_${query || 'MBG'}.csv`; a.click();
 }
