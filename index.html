@@ -1,184 +1,193 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MBG Dashboard PRO - Manajemen Pesanan</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  
-  <style>
-    /* Styling Tambahan untuk Dashboard Profesional */
-    .stat-card {
-        transition: transform 0.2s, box-shadow 0.2s;
-        border-left: 4px solid #1a56db;
-    }
-    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-    .bg-gradient-pro { background: linear-gradient(135deg, #1a56db 0%, #1e429f 100%); }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBG Dashboard Pro - Enterprise Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
-    /* Warna khusus untuk status uang */
-    .text-money { color: #059669; font-weight: 700; }
-    
-    /* Scrollbar halus */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-  </style>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        
+        .nav-item.active { background-color: #1e293b; color: #ffffff; }
+        .badge-lunas { background-color: #dcfce7; color: #166534; }
+        .badge-pending { background-color: #fee2e2; color: #991b1b; }
+        
+        .modal-overlay { 
+            transition: all 0.3s ease; 
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+        }
+        
+        .hidden { display: none !important; }
+        
+        @media print { .no-print { display: none !important; } }
+    </style>
 </head>
-<body class="bg-slate-50">
+<body class="text-slate-800">
 
-<div class="flex">
-  <aside class="w-64 bg-slate-900 min-h-screen p-6 no-print">
-    <div class="flex items-center gap-3 mb-10">
-      <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/50">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-      </div>
-      <span class="text-xl font-bold text-white tracking-tight">MBG <span class="text-blue-400">PRO</span></span>
+<div class="flex min-h-screen">
+    <aside class="w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col no-print">
+        <div class="p-6">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <span class="text-xl font-bold text-white tracking-tight">MBG <span class="text-indigo-400">PRO</span></span>
+            </div>
+
+            <nav class="space-y-1">
+                <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Utama</p>
+                <div id="nav-dashboard" onclick="showPage('dashboard')" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer hover:bg-slate-800 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                    <span class="font-medium text-sm">Dashboard</span>
+                </div>
+                <div id="nav-pesanan" onclick="showPage('pesanan')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer hover:bg-slate-800 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    <span class="font-medium text-sm">Data Pesanan</span>
+                </div>
+            </nav>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0">
+        <header class="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between no-print">
+            <h2 id="topbar-title" class="text-lg font-bold text-slate-800">Dashboard</h2>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <p id="topbar-date" class="text-xs font-medium text-slate-500"></p>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">AD</div>
+            </div>
+        </header>
+
+        <main class="p-8">
+            <div id="dashboardPage" class="page">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <p class="text-xs font-bold text-slate-400 uppercase mb-2">Total Pesanan</p>
+                        <h3 id="stat-total-mbg" class="text-3xl font-extrabold text-slate-800">0</h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-blue-500">
+                        <p class="text-xs font-bold text-slate-400 uppercase mb-2">Total Porsi</p>
+                        <h3 id="stat-total-porsi" class="text-3xl font-extrabold text-slate-800">0</h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-emerald-500">
+                        <p class="text-xs font-bold text-slate-400 uppercase mb-2">Total Omzet</p>
+                        <h3 id="stat-total-duit" class="text-2xl font-extrabold text-emerald-600">Rp 0</h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-rose-500">
+                        <p class="text-xs font-bold text-slate-400 uppercase mb-2">Total Piutang</p>
+                        <h3 id="stat-piutang" class="text-2xl font-extrabold text-rose-600">Rp 0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-50 bg-slate-50/50">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Aktivitas Terakhir</h4>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-[10px] font-bold text-slate-400 uppercase">
+                                <tr>
+                                    <th class="px-6 py-3">Tanggal</th>
+                                    <th class="px-6 py-3">Nama MBG</th>
+                                    <th class="px-6 py-3">Menu</th>
+                                    <th class="px-6 py-3">Status</th>
+                                    <th class="px-6 py-3 text-right">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentTable" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="pesananPage" class="page hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-6 border-b border-slate-50 flex flex-wrap gap-4 justify-between items-center no-print">
+                        <div class="relative w-full max-w-xs">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            </span>
+                            <input id="searchInput" oninput="renderTable()" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="Cari nama atau status...">
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="exportPDF()" class="px-4 py-2.5 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold hover:bg-rose-100 transition-all flex items-center gap-2">PDF</button>
+                            <button onclick="exportExcel()" class="px-4 py-2.5 bg-emerald-50 text-emerald-600 rounded-xl text-xs font-bold hover:bg-emerald-100 transition-all flex items-center gap-2">EXCEL</button>
+                            <button onclick="tambahData()" class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all">+ Tambah Pesanan</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-[10px] font-bold text-slate-400 uppercase">
+                                <tr>
+                                    <th class="px-6 py-4">No</th>
+                                    <th class="px-6 py-4">Tanggal</th>
+                                    <th class="px-6 py-4">Nama MBG</th>
+                                    <th class="px-6 py-4">Menu</th>
+                                    <th class="px-6 py-4">Harga</th>
+                                    <th class="px-6 py-4">Qty</th>
+                                    <th class="px-6 py-4">Total</th>
+                                    <th class="px-6 py-4 text-center">Status</th>
+                                    <th class="px-6 py-4 text-center no-print">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableData" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
-
-    <nav class="space-y-2">
-      <p class="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-4">Main Menu</p>
-      <div id="nav-dashboard" onclick="showPage('dashboard')" class="flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer text-slate-300 hover:bg-slate-800 transition-all active">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-        <span>Dashboard</span>
-      </div>
-      <div id="nav-pesanan" onclick="showPage('pesanan')" class="flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer text-slate-300 hover:bg-slate-800 transition-all">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-        <span>Data Pesanan</span>
-      </div>
-    </nav>
-  </aside>
-
-  <div class="flex-1 flex flex-col">
-    <header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center no-print">
-      <h2 class="text-lg font-bold text-slate-800" id="topbar-title">Dashboard Overview</h2>
-      <div class="flex items-center gap-4">
-        <span id="topbar-date" class="text-sm text-slate-500 font-medium"></span>
-        <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs">AD</div>
-      </div>
-    </header>
-
-    <main class="p-8">
-      <div id="dashboardPage" class="page active">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div class="stat-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-            <p class="text-slate-500 text-xs font-semibold uppercase">Total Transaksi</p>
-            <h3 class="text-3xl font-bold text-slate-800 mt-1" id="stat-total-mbg">0</h3>
-          </div>
-          <div class="stat-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm" style="border-left-color: #8b5cf6;">
-            <p class="text-slate-500 text-xs font-semibold uppercase">Volume Porsi</p>
-            <h3 class="text-3xl font-bold text-slate-800 mt-1" id="stat-total-porsi">0</h3>
-          </div>
-          <div class="stat-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm" style="border-left-color: #10b981;">
-            <p class="text-slate-500 text-xs font-semibold uppercase">Total Omzet</p>
-            <h3 class="text-2xl font-bold text-emerald-600 mt-1" id="stat-total-duit">Rp 0</h3>
-          </div>
-          <div class="stat-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm" style="border-left-color: #f59e0b;">
-            <p class="text-slate-500 text-xs font-semibold uppercase">Pesanan Hari Ini</p>
-            <h3 class="text-3xl font-bold text-slate-800 mt-1" id="stat-hari-ini">0</h3>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-            <h4 class="font-bold text-slate-700 uppercase text-xs tracking-wider">Aktivitas Terakhir</h4>
-            <span class="px-2 py-1 bg-blue-100 text-blue-700 text-[10px] font-bold rounded">LIVE UPDATE</span>
-          </div>
-          <table class="w-full text-left border-collapse">
-            <thead class="bg-slate-50 text-slate-400 text-[10px] uppercase font-bold">
-              <tr>
-                <th class="px-6 py-3">Tanggal</th>
-                <th class="px-6 py-3">Customer (MBG)</th>
-                <th class="px-6 py-3">Menu</th>
-                <th class="px-6 py-3">Jumlah</th>
-                <th class="px-6 py-3">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody id="recentTable" class="text-sm divide-y divide-slate-100"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div id="pesananPage" class="page">
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div class="p-6 border-b border-slate-100 flex flex-wrap gap-4 justify-between items-center no-print">
-            <div class="relative w-full max-w-md">
-              <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-              </span>
-              <input id="searchInput" oninput="renderTable()" class="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Cari pesanan atau nama...">
-            </div>
-            <div class="flex gap-2">
-              <button onclick="exportPDF()" class="bg-rose-50 text-rose-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-rose-100 transition-colors flex items-center gap-2">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 16l-4-4h3V4h2v8h3l-4 4z"/></svg> PDF
-              </button>
-              <button onclick="exportExcel()" class="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-100 transition-colors flex items-center gap-2">
-                 Excel
-              </button>
-              <button onclick="tambahData()" class="bg-blue-600 text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all flex items-center gap-2">
-                + Tambah Pesanan
-              </button>
-            </div>
-          </div>
-          
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-              <thead class="bg-slate-50 text-slate-400 text-[10px] uppercase font-bold">
-                <tr>
-                  <th class="px-6 py-4">No</th>
-                  <th class="px-6 py-4">Tanggal</th>
-                  <th class="px-6 py-4">Nama MBG</th>
-                  <th class="px-6 py-4">Menu Pesanan</th>
-                  <th class="px-6 py-4">Harga Unit</th>
-                  <th class="px-6 py-4">Jumlah</th>
-                  <th class="px-6 py-4">Total</th>
-                  <th class="px-6 py-4 text-center no-print">Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="tableData" class="divide-y divide-slate-100 text-sm"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
 </div>
 
-<div class="modal-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300" id="modalForm">
-  <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl transform scale-95 transition-all">
-    <div class="flex justify-between items-center mb-6">
-        <h3 id="modalTitle" class="text-xl font-bold text-slate-800">Tambah Pesanan</h3>
-        <button onclick="tutupModal()" class="text-slate-400 hover:text-slate-600">&times;</button>
-    </div>
-    <div class="space-y-4">
-      <div>
-        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tanggal Transaksi</label>
-        <input type="date" id="formTanggal" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500">
-      </div>
-      <div>
-        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Customer (MBG)</label>
-        <input type="text" id="formNama" placeholder="Contoh: MBG Sukabumi" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500">
-      </div>
-      <div>
-        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Menu Makanan</label>
-        <input type="text" id="formPesanan" placeholder="Contoh: Nasi Kotak Ayam Bakar" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500">
-      </div>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Harga Satuan (Rp)</label>
-          <input type="number" id="formHarga" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500">
+<div id="modalForm" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none no-print">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden transform scale-95 transition-all">
+        <div class="bg-slate-900 p-6 text-white flex justify-between items-center">
+            <h3 id="modalTitle" class="font-bold text-lg">Input Pesanan</h3>
+            <button onclick="tutupModal()" class="text-slate-400 hover:text-white">&times;</button>
         </div>
-        <div>
-          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Jumlah Porsi</label>
-          <input type="number" id="formJumlah" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500">
+        <div class="p-8 space-y-4">
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tanggal</label>
+                <input type="date" id="formTanggal" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nama MBG (Pelanggan)</label>
+                <input type="text" id="formNama" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 outline-none" placeholder="Contoh: MBG Sukabumi">
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Menu Pesanan</label>
+                <input type="text" id="formPesanan" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 outline-none" placeholder="Contoh: Paket Nasi Ayam">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Harga Satuan</label>
+                    <input type="number" id="formHarga" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 outline-none" placeholder="0">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Jumlah Porsi</label>
+                    <input type="number" id="formJumlah" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 outline-none" placeholder="0">
+                </div>
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Status Pembayaran</label>
+                <select id="formStatus" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-indigo-500 outline-none cursor-pointer">
+                    <option value="Belum Lunas">Belum Lunas ❌</option>
+                    <option value="Lunas">Lunas ✅</option>
+                </select>
+            </div>
         </div>
-      </div>
+        <div class="px-8 pb-8 flex gap-3">
+            <button onclick="tutupModal()" class="flex-1 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">Batal</button>
+            <button onclick="simpanForm()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">Simpan</button>
+        </div>
     </div>
-    <div class="flex gap-3 mt-8">
-      <button class="flex-1 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all" onclick="tutupModal()">Batal</button>
-      <button class="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all" onclick="simpanForm()">Simpan Data</button>
-    </div>
-  </div>
 </div>
 
 <script src="script.js"></script>
